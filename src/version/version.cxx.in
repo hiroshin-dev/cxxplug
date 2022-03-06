@@ -1,0 +1,36 @@
+///
+/// Copyright (c) 2022 Hiroshi Nakashima
+///
+/// This software is released under the MIT License, see LICENSE.
+///
+#include "version/version.hxx"
+
+namespace cxxplug {
+namespace detail {
+
+int32_t Version::major() const {
+  return @PROJECT_VERSION_MAJOR@;
+}
+
+int32_t Version::minor() const {
+  return @PROJECT_VERSION_MINOR@;
+}
+
+int32_t Version::patch() const {
+  return @PROJECT_VERSION_PATCH@;
+}
+
+std::string Version::vcs_branch() const {
+  return "@PROJECT_BRANCH@";
+}
+
+std::string Version::vcs_commit_hash() const {
+  return "@PROJECT_COMMIT_HASH@";
+}
+
+std::string Version::vcs_commit_date() const {
+  return "@PROJECT_COMMIT_DATE@";
+}
+
+}  // namespace detail
+}  // namespace cxxplug
