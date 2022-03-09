@@ -8,28 +8,8 @@ cmake_minimum_required(VERSION 3.11)
 project(cxxplug VERSION 0.1.0)
 message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION}")
 
-find_package(Git QUIET)
-
-if(Git_FOUND)
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE PROJECT_BRANCH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET)
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:%H
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE PROJECT_COMMIT_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET)
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:%cd
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE PROJECT_COMMIT_DATE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET)
-endif()
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+include(ProjectVersion)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -37,6 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 if(UNIX)

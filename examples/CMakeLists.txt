@@ -14,3 +14,8 @@ endif()
 
 add_library(example_plugin SHARED plugin.cxx plugin_impl.cxx)
 target_link_libraries(example_plugin cxxplug::cxxplug)
+if(MSVC)
+    target_compile_options(example_plugin PRIVATE /W4)
+else()
+    target_compile_options(example_plugin PRIVATE -Wall -Wextra -Wpedantic)
+endif()
