@@ -11,7 +11,6 @@
 #include "cxxplug/version.hxx"
 
 namespace cxxplug {
-namespace detail {
 
 class Version : public I_Version {
  public:
@@ -23,7 +22,6 @@ class Version : public I_Version {
   std::string vcs_commit_date() const final;
 };
 
-}  // namespace detail
 }  // namespace cxxplug
 
 #endif  // CXXPLUG_VERSION_VERSION_HXX_

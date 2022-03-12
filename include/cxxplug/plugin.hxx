@@ -54,7 +54,10 @@ class Plugin {
   /// @return an instance of the created class
   template<typename Base>
   std::unique_ptr<Base> create_instance(const std::string &class_name) const {
-    return std::unique_ptr<Base>(create_raw_instance<Base>(class_name));
+    const auto factory = get_factory(class_name);
+    return (factory != nullptr) ?
+        static_cast<const detail::I_Factory<Base>*>(factory)->create() :
+        nullptr;
   }
 
   /// @brief Registers the class of the plugin library
@@ -73,14 +76,6 @@ class Plugin {
   explicit Plugin(
       std::unique_ptr<void, library_deleter> library,
       const std::string &library_path);
-
-  template<typename Base>
-  Base* create_raw_instance(const std::string &class_name) const {
-    const auto factory = get_factory(class_name);
-    return (factory != nullptr) ?
-        static_cast<const detail::I_Factory<Base>*>(factory)->create() :
-        nullptr;
-  }
 
   const detail::I_FactoryBase* get_factory(
       const std::string &class_name) const;

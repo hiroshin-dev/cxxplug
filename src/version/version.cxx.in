@@ -6,7 +6,6 @@
 #include "version/version.hxx"
 
 namespace cxxplug {
-namespace detail {
 
 int32_t Version::major() const {
   return @PROJECT_VERSION_MAJOR@;
@@ -32,5 +31,4 @@ std::string Version::vcs_commit_date() const {
   return "@PROJECT_COMMIT_DATE@";
 }
 
-}  // namespace detail
 }  // namespace cxxplug

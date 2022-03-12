@@ -88,8 +88,15 @@ std::unique_ptr<Plugin> Plugin::load(const std::string &library_path) {
     auto entrypoint = reinterpret_cast<EntryPoint>(
         get_symbol_address(library.get(), entrypoint_symbol));
     if (entrypoint != nullptr) {
-      std::unique_ptr<Plugin> plugin(
-          new Plugin(std::move(library), library_path));
+      struct make_unique_enabler : public Plugin {
+       public:
+        make_unique_enabler(
+            std::unique_ptr<void, library_deleter> library,
+            const std::string &library_path)
+            : Plugin(std::move(library), library_path) {}
+      };
+      auto plugin = std::make_unique<make_unique_enabler>(
+          std::move(library), library_path);
       entrypoint(plugin.get());
       return plugin;
     }
@@ -131,7 +138,7 @@ void Plugin::register_factory(
 }
 
 std::unique_ptr<I_Version> get_version() {
-  return std::unique_ptr<detail::Version>(new detail::Version);
+  return std::make_unique<Version>();
 }
 
 Plugin& plugin_cast(void *plugin_ptr) {

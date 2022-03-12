@@ -18,6 +18,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+endif()
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
 if(UNIX)
@@ -68,7 +73,9 @@ add_library(cxxplug SHARED
 add_library(cxxplug::cxxplug ALIAS cxxplug)
 
 target_include_directories(cxxplug
-    PUBLIC include
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
     PRIVATE src
 )
 target_link_libraries(cxxplug PRIVATE cxxlog::cxxlog)
@@ -77,6 +84,7 @@ target_compile_options(cxxplug PRIVATE ${WARNING_OPTIONS})
 if(UNIX)
     target_link_libraries(cxxplug PRIVATE dl)
 endif()
+set_target_properties(cxxplug PROPERTIES VERSION ${PROJECT_VERSION})
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
@@ -84,3 +92,14 @@ endif()
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
+
+install(TARGETS cxxplug
+    EXPORT cxxplug-config
+)
+install(EXPORT cxxplug-config
+    NAMESPACE cxxplug::
+    DESTINATION lib/cmake/cxxplug
+)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+    DESTINATION include
+)

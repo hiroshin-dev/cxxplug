@@ -3,7 +3,7 @@
 #
 # This software is released under the MIT License, see LICENSE.
 #
-include(function/add_plugin_test)
+include(TestFunction)
 
 add_subdirectory(plugin)
 

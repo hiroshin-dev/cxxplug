@@ -8,6 +8,8 @@
 #ifndef CXXPLUG_FACTORY_HXX_
 #define CXXPLUG_FACTORY_HXX_
 
+#include <memory>
+
 namespace cxxplug {
 namespace detail {
 
@@ -19,14 +21,14 @@ class I_FactoryBase {
 template<typename Base>
 class I_Factory : public I_FactoryBase {
  public:
-  virtual Base* create() const = 0;
+  virtual std::unique_ptr<Base> create() const = 0;
 };
 
 template<typename Base, typename Derived>
 class Factory : public I_Factory<Base> {
  public:
-  Base* create() const final {
-    return new Derived;
+  std::unique_ptr<Base> create() const final {
+    return std::make_unique<Derived>();
   }
 };
 
