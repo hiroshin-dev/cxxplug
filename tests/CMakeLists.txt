@@ -5,10 +5,12 @@
 #
 include(function/add_plugin_test)
 
-add_plugin_test(test_plugin
-    SOURCES test_plugin.cxx
+add_subdirectory(plugin)
+
+add_plugin_test(test_cxxplug
+    SOURCES test_cxxplug.cxx
     PROPERTIES ENVIRONMENT
-        "PLUGIN_PATH=$<TARGET_FILE:example_plugin>"
+        "PLUGIN_PATH=$<TARGET_FILE:test_plugin>"
 )
 
 add_plugin_test(test_utils

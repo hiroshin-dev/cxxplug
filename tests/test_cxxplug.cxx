@@ -10,6 +10,14 @@
 #include "cxxplug/cxxplug.hxx"
 #include "cxxlog/cxxlog.hxx"
 
+namespace {
+
+std::string get_plugin_path() {
+  return cxxplug::get_environment("PLUGIN_PATH");
+}
+
+}  // namespace
+
 TEST(cxxplug, get_version) {
   const auto version = cxxplug::get_version();
   ASSERT_NE(version, nullptr);
@@ -22,7 +30,7 @@ TEST(cxxplug, get_version) {
 }
 
 TEST(Plugin, load) {
-  const auto plugin_path = cxxplug::get_environment("PLUGIN_PATH");
+  const auto plugin_path = get_plugin_path();
   const auto plugin = cxxplug::Plugin::load(plugin_path);
   ASSERT_NE(plugin, nullptr);
   EXPECT_EQ(plugin->library_path(), plugin_path);
@@ -40,8 +48,7 @@ TEST(Plugin, load_error) {
 }
 
 TEST(Plugin, get_available_classes) {
-  const auto plugin_path = cxxplug::get_environment("PLUGIN_PATH");
-  const auto plugin = cxxplug::Plugin::load(plugin_path);
+  const auto plugin = cxxplug::Plugin::load(get_plugin_path());
   ASSERT_NE(plugin, nullptr);
   const auto class_names = plugin->get_available_classes<cxxplug::I_Version>();
   const std::vector<std::string> expected { "Version" };
@@ -49,15 +56,22 @@ TEST(Plugin, get_available_classes) {
 }
 
 TEST(Plugin, create_instance) {
-  const auto plugin_path = cxxplug::get_environment("PLUGIN_PATH");
-  const auto plugin = cxxplug::Plugin::load(plugin_path);
+  const auto plugin = cxxplug::Plugin::load(get_plugin_path());
   ASSERT_NE(plugin, nullptr);
   const auto object = plugin->create_instance<cxxplug::I_Version>("Version");
   ASSERT_NE(object, nullptr);
-  CXXLOG_I << object->major();
-  CXXLOG_I << object->minor();
-  CXXLOG_I << object->patch();
-  CXXLOG_I << object->vcs_branch();
-  CXXLOG_I << object->vcs_commit_hash();
-  CXXLOG_I << object->vcs_commit_date();
+  EXPECT_EQ(object->major(), 1);
+  EXPECT_EQ(object->minor(), 2);
+  EXPECT_EQ(object->patch(), 3);
+  EXPECT_EQ(object->vcs_branch(), "branch");
+  EXPECT_EQ(object->vcs_commit_hash(), "hash");
+  EXPECT_EQ(object->vcs_commit_date(), "date");
+}
+
+TEST(Plugin, create_instance_error) {
+  const auto plugin = cxxplug::Plugin::load(get_plugin_path());
+  ASSERT_NE(plugin, nullptr);
+  const auto object =
+      plugin->create_instance<cxxplug::I_Version>("non-existent");
+  EXPECT_EQ(object, nullptr);
 }

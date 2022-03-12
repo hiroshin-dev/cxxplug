@@ -33,7 +33,18 @@ option(BUILD_EXAMPLES "build all examples" OFF)
 # option(BUILD_TESTING) & enable_testing()
 include(CTest)
 if(BUILD_TESTING)
-    set(BUILD_EXAMPLES ON)
+    include(Coverage)
+    add_coverage_target(coverage
+        PATTERN
+            *cxxplug/include*
+            *cxxplug/src*
+    )
+endif()
+
+if(MSVC)
+    set(WARNING_OPTIONS /W4)
+else()
+    set(WARNING_OPTIONS -Wall -Wextra -Wpedantic)
 endif()
 
 include(FetchContent)
@@ -62,11 +73,9 @@ target_include_directories(cxxplug
 )
 target_link_libraries(cxxplug PRIVATE cxxlog::cxxlog)
 target_compile_definitions(cxxplug PRIVATE CXXLOG_LEVEL=cxxlog::debug)
-if(MSVC)
-    target_compile_options(cxxplug PRIVATE /W4)
-else()
+target_compile_options(cxxplug PRIVATE ${WARNING_OPTIONS})
+if(UNIX)
     target_link_libraries(cxxplug PRIVATE dl)
-    target_compile_options(cxxplug PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 if(BUILD_EXAMPLES)

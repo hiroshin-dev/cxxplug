@@ -4,11 +4,10 @@
 # This software is released under the MIT License, see LICENSE.
 #
 
-# add_plugin_test
-# - SOURCES
-# - LIBRARIES
-# - PROPERTIES
-# -- ENVIRONMENT
+# add_plugin_test(<name>
+#     [SOURCES <sources> ...]
+#     [LIBRARIES <libraries> ...]
+#     [PROPERTIES [ENVIRONMENT <envs> ...]])
 
 find_package(GTest QUIET)
 

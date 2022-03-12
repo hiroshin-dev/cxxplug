@@ -17,3 +17,13 @@ TEST(utils, get_environment) {
     EXPECT_EQ(value, "error");
   }
 }
+
+TEST(utils, get_library_name) {
+  const auto library_name = cxxplug::get_library_name("test");
+#ifdef _WIN32
+  const auto expect = "test.dll";
+#else
+  const auto expect = "libtest.so";
+#endif  // _WIN32
+  EXPECT_EQ(library_name, expect);
+}

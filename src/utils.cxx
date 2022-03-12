@@ -6,6 +6,7 @@
 #include "cxxplug/utils.hxx"
 
 #include <stdlib.h>
+#include <sstream>
 #include <vector>
 
 namespace cxxplug {
@@ -25,6 +26,19 @@ std::string get_environment(
   const auto value = getenv(name.c_str());
   return (value != nullptr) ? value : default_value;
 #endif  // _WIN32
+}
+
+std::string get_library_name(const std::string &plugin_name) {
+#ifdef _WIN32
+  constexpr auto prefix = "";
+  constexpr auto extension = ".dll";
+#else
+  constexpr auto prefix = "lib";
+  constexpr auto extension = ".so";
+#endif  // _WIN32
+  std::ostringstream library_name;
+  library_name << prefix << plugin_name << extension;
+  return library_name.str();
 }
 
 }  // namespace cxxplug

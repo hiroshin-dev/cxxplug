@@ -12,12 +12,6 @@
 
 namespace {
 
-#ifdef _WIN32
-const char plugin_name[] = "example_plugin.dll";
-#else
-const char plugin_name[] = "libexample_plugin.so";
-#endif  // _WIN32
-
 std::string get_current_dir(const std::string &executable_path) {
   return executable_path.substr(0, executable_path.find_last_of("/\\") + 1);
 }
@@ -26,7 +20,9 @@ std::string get_current_dir(const std::string &executable_path) {
 
 int32_t main(int32_t, char **argv) {
   const auto current_dir = get_current_dir(argv[0]);
-  auto plugin = cxxplug::Plugin::load(current_dir + plugin_name);
+  const auto library_name = cxxplug::get_library_name("example_plugin");
+
+  auto plugin = cxxplug::Plugin::load(current_dir + library_name);
 
   if (plugin != nullptr) {
     auto version = plugin->create_instance<cxxplug::I_Version>("Version");

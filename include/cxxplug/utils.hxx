@@ -15,6 +15,8 @@ namespace cxxplug {
 std::string get_environment(
     const std::string &name, const std::string &default_value = std::string());
 
+std::string get_library_name(const std::string &plugin_name);
+
 }  // namespace cxxplug
 
 #endif  // CXXPLUG_UTILS_HXX_
