@@ -47,6 +47,14 @@ TEST(Plugin, load_error) {
   }
 }
 
+TEST(Plugin, get_registered_classes) {
+  const auto plugin = cxxplug::Plugin::load(get_plugin_path());
+  ASSERT_NE(plugin, nullptr);
+  const auto class_names = plugin->get_registered_classes();
+  const std::vector<std::string> expected { "Version" };
+  EXPECT_EQ(class_names, expected);
+}
+
 TEST(Plugin, get_available_classes) {
   const auto plugin = cxxplug::Plugin::load(get_plugin_path());
   ASSERT_NE(plugin, nullptr);

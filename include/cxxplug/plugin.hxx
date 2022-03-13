@@ -33,6 +33,9 @@ class Plugin {
   /// @brief Returns the path of the library
   std::string library_path() const;
 
+  /// @brief Returns a list of registered class names
+  std::vector<std::string> get_registered_classes() const;
+
   /// @brief Returns a list of available class names
   ///
   /// This function requires RTTI.
@@ -63,9 +66,10 @@ class Plugin {
   /// @brief Registers the class of the plugin library
   /// @param[in] class_name - the name of the class to register
   template<typename Base, typename Derived>
-  void register_class(const std::string &class_name) {
+  Plugin& register_class(const std::string &class_name) {
     register_factory(
         class_name, std::make_unique<detail::Factory<Base, Derived>>());
+    return *this;
   }
 
  private:
@@ -92,9 +96,6 @@ class Plugin {
 
 /// @brief Returns the version of cxxplug
 std::unique_ptr<I_Version> get_version();
-
-/// @brief Converts a pointer to a plugin instance
-Plugin& plugin_cast(void *plugin_ptr);
 
 }  // namespace cxxplug
 

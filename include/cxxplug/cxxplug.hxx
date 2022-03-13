@@ -9,6 +9,7 @@
 #define CXXPLUG_CXXPLUG_HXX_
 
 #include "cxxplug/plugin.hxx"
+#include "cxxplug/macro.hxx"
 #include "cxxplug/utils.hxx"
 
 #endif  // CXXPLUG_CXXPLUG_HXX_

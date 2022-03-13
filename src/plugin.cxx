@@ -43,7 +43,7 @@ void unload_library(void *handle) {
 
 void* load_library(const char *path) {
   dlerror();
-  void *handle = dlopen(path, RTLD_LAZY | RTLD_LOCAL | RTLD_NODELETE);
+  void *handle = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
   if (handle == nullptr) {
     CXXLOG_E << "dlopen: " << dlerror();
   }
@@ -67,7 +67,7 @@ void unload_library(void *handle) {
 
 using EntryPoint = void (*)(void *);
 
-const char entrypoint_symbol[] = "plugin_entry";
+const char entrypoint_symbol[] = "cxxplug_entry";
 
 }  // namespace
 
@@ -119,6 +119,14 @@ std::string Plugin::library_path() const {
   return library_path_;
 }
 
+std::vector<std::string> Plugin::get_registered_classes() const {
+  std::vector<std::string> class_names;
+  for (const auto &element : factories_) {
+    class_names.push_back(element.first);
+  }
+  return class_names;
+}
+
 const detail::I_FactoryBase* Plugin::get_factory(
     const std::string &class_name) const {
   detail::I_FactoryBase *factory = nullptr;
@@ -139,10 +147,6 @@ void Plugin::register_factory(
 
 std::unique_ptr<I_Version> get_version() {
   return std::make_unique<Version>();
-}
-
-Plugin& plugin_cast(void *plugin_ptr) {
-  return *reinterpret_cast<Plugin*>(plugin_ptr);
 }
 
 }  // namespace cxxplug
