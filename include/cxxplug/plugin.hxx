@@ -42,7 +42,7 @@ class Plugin {
   template<typename Base>
   std::vector<std::string> get_available_classes() const {
     std::vector<std::string> class_names;
-    for (const auto &element : factories_) {
+    for (const auto &element : get_factories()) {
       const auto factory =
           dynamic_cast<detail::I_Factory<Base>*>(element.second.get());
       if (factory != nullptr) {
@@ -73,13 +73,11 @@ class Plugin {
   }
 
  private:
-  struct library_deleter {
-    void operator()(void *handle);
-  };
+  struct impl;
+  explicit Plugin(std::unique_ptr<impl> pimpl);
 
-  explicit Plugin(
-      std::unique_ptr<void, library_deleter> library,
-      const std::string &library_path);
+  const std::map<std::string, std::unique_ptr<detail::I_FactoryBase>>&
+  get_factories() const;
 
   const detail::I_FactoryBase* get_factory(
       const std::string &class_name) const;
@@ -89,9 +87,7 @@ class Plugin {
       std::unique_ptr<detail::I_FactoryBase> factory);
 
  private:
-  const std::unique_ptr<void, library_deleter> library_;
-  const std::string library_path_;
-  std::map<std::string, std::unique_ptr<detail::I_FactoryBase>> factories_;
+  const std::unique_ptr<impl> pimpl_;
 };
 
 /// @brief Returns the version of cxxplug

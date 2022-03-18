@@ -69,34 +69,41 @@ using EntryPoint = void (*)(void *);
 
 const char entrypoint_symbol[] = "cxxplug_entry";
 
+struct library_deleter {
+  void operator()(void *handle) {
+    if (handle != nullptr) {
+      CXXLOG_V << "unload_library: " << handle;
+      unload_library(handle);
+    }
+  }
+};
+
 }  // namespace
 
 namespace cxxplug {
 
-void Plugin::library_deleter::operator()(void *handle) {
-  if (handle != nullptr) {
-    CXXLOG_V << "unload_library: " << handle;
-    unload_library(handle);
-  }
-}
+struct Plugin::impl {
+  impl(void *handle, const std::string &path)
+      : library(handle), library_path(path) {}
+
+  const std::unique_ptr<void, library_deleter> library;
+  const std::string library_path;
+  std::map<std::string, std::unique_ptr<detail::I_FactoryBase>> factories;
+};
 
 std::unique_ptr<Plugin> Plugin::load(const std::string &library_path) {
-  std::unique_ptr<void, library_deleter> library(
-      load_library(library_path.c_str()));
-  if (library != nullptr) {
-    CXXLOG_V << "load_library: " << library.get();
+  auto handle = load_library(library_path.c_str());
+  if (handle != nullptr) {
+    CXXLOG_V << "load_library: " << handle;
+    auto pimpl = std::make_unique<impl>(handle, library_path);
     auto entrypoint = reinterpret_cast<EntryPoint>(
-        get_symbol_address(library.get(), entrypoint_symbol));
+        get_symbol_address(handle, entrypoint_symbol));
     if (entrypoint != nullptr) {
       struct make_unique_enabler : public Plugin {
-       public:
-        make_unique_enabler(
-            std::unique_ptr<void, library_deleter> library,
-            const std::string &library_path)
-            : Plugin(std::move(library), library_path) {}
+        make_unique_enabler(std::unique_ptr<impl> pimpl)
+            : Plugin(std::move(pimpl)) {}
       };
-      auto plugin = std::make_unique<make_unique_enabler>(
-          std::move(library), library_path);
+      auto plugin = std::make_unique<make_unique_enabler>(std::move(pimpl));
       entrypoint(plugin.get());
       return plugin;
     }
@@ -104,10 +111,8 @@ std::unique_ptr<Plugin> Plugin::load(const std::string &library_path) {
   return nullptr;
 }
 
-Plugin::Plugin(
-    std::unique_ptr<void, library_deleter> library,
-    const std::string &library_path)
-    : library_(std::move(library)), library_path_(library_path), factories_() {
+Plugin::Plugin(std::unique_ptr<impl> pimpl)
+    : pimpl_(std::move(pimpl)) {
   CXXLOG_V << "Plugin.ctor: " << this;
 }
 
@@ -116,22 +121,27 @@ Plugin::~Plugin() {
 }
 
 std::string Plugin::library_path() const {
-  return library_path_;
+  return pimpl_->library_path;
 }
 
 std::vector<std::string> Plugin::get_registered_classes() const {
   std::vector<std::string> class_names;
-  for (const auto &element : factories_) {
+  for (const auto &element : pimpl_->factories) {
     class_names.push_back(element.first);
   }
   return class_names;
 }
 
+const std::map<std::string, std::unique_ptr<detail::I_FactoryBase>>&
+Plugin::get_factories() const {
+  return pimpl_->factories;
+}
+
 const detail::I_FactoryBase* Plugin::get_factory(
     const std::string &class_name) const {
   detail::I_FactoryBase *factory = nullptr;
-  const auto itr = factories_.find(class_name);
-  if (itr != factories_.end()) {
+  const auto itr = pimpl_->factories.find(class_name);
+  if (itr != pimpl_->factories.end()) {
     factory = itr->second.get();
   }
   CXXLOG_V << "get_factory: `" << class_name << "`, " << factory;
@@ -142,7 +152,7 @@ void Plugin::register_factory(
     const std::string &class_name,
     std::unique_ptr<detail::I_FactoryBase> factory) {
   CXXLOG_V << "register_factory: `" << class_name << "`, " << factory.get();
-  factories_[class_name] = std::move(factory);
+  pimpl_->factories[class_name] = std::move(factory);
 }
 
 std::unique_ptr<I_Version> get_version() {
