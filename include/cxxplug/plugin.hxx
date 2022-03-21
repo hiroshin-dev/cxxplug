@@ -74,10 +74,10 @@ class Plugin {
 
  private:
   struct impl;
-  explicit Plugin(std::unique_ptr<impl> pimpl);
+  explicit Plugin(std::unique_ptr<impl> pimpl) noexcept;
 
   const std::map<std::string, std::unique_ptr<detail::I_FactoryBase>>&
-  get_factories() const;
+  get_factories() const noexcept;
 
   const detail::I_FactoryBase* get_factory(
       const std::string &class_name) const;

@@ -84,8 +84,8 @@ namespace cxxplug {
 
 struct Plugin::impl {
   impl(void *handle, const std::string &path)
-      : library(handle), library_path(path) {}
-
+      : library(handle), library_path(path) {
+  }
   const std::unique_ptr<void, library_deleter> library;
   const std::string library_path;
   std::map<std::string, std::unique_ptr<detail::I_FactoryBase>> factories;
@@ -100,8 +100,9 @@ std::unique_ptr<Plugin> Plugin::load(const std::string &library_path) {
         get_symbol_address(handle, entrypoint_symbol));
     if (entrypoint != nullptr) {
       struct make_unique_enabler : public Plugin {
-        make_unique_enabler(std::unique_ptr<impl> pimpl)
-            : Plugin(std::move(pimpl)) {}
+        make_unique_enabler(std::unique_ptr<impl> pimpl) noexcept
+            : Plugin(std::move(pimpl)) {
+        }
       };
       auto plugin = std::make_unique<make_unique_enabler>(std::move(pimpl));
       entrypoint(plugin.get());
@@ -111,14 +112,11 @@ std::unique_ptr<Plugin> Plugin::load(const std::string &library_path) {
   return nullptr;
 }
 
-Plugin::Plugin(std::unique_ptr<impl> pimpl)
+Plugin::Plugin(std::unique_ptr<impl> pimpl) noexcept
     : pimpl_(std::move(pimpl)) {
-  CXXLOG_V << "Plugin.ctor: " << this;
 }
 
-Plugin::~Plugin() {
-  CXXLOG_V << "Plugin.dtor: " << this;
-}
+Plugin::~Plugin() = default;
 
 std::string Plugin::library_path() const {
   return pimpl_->library_path;
@@ -133,7 +131,7 @@ std::vector<std::string> Plugin::get_registered_classes() const {
 }
 
 const std::map<std::string, std::unique_ptr<detail::I_FactoryBase>>&
-Plugin::get_factories() const {
+Plugin::get_factories() const noexcept {
   return pimpl_->factories;
 }
 
